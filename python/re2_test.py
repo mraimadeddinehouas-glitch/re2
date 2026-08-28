@@ -62,6 +62,14 @@ class Re2CompileTest(parameterized.TestCase):
     with self.assertRaisesRegex(re2.error, 'pattern too large'):
       re2.compile('.{1000}', options=options)
 
+  def test_non_contiguous_buffers_rejected(self):
+    with self.assertRaisesRegex(
+        ValueError, 'one-dimensional contiguous byte sequence'):
+      re2.compile(memoryview(b'abc')[::-1])
+    with self.assertRaisesRegex(
+        ValueError, 'one-dimensional contiguous byte sequence'):
+      re2.search(b'b', memoryview(b'abc')[::2])
+
   def test_programsize_reverseprogramsize(self):
     regexp = re2.compile('a+b')
     self.assertEqual(7, regexp.programsize)
